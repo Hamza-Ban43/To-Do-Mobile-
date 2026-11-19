@@ -1,6 +1,5 @@
 package com.taskflow.app.presentation.home
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,14 +24,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.taskflow.app.data.local.TaskEntity
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.taskflow.app.presentation.components.EmptyState
+import com.taskflow.app.presentation.components.TaskCard
 
 @Composable
 fun HomeScreen(
@@ -40,13 +37,18 @@ fun HomeScreen(
     onAddClick: () -> Unit,
     onTaskClick: (TaskEntity) -> Unit,
     onDeleteClick: (TaskEntity) -> Unit,
-    onToggleCompletion: (TaskEntity, Boolean) -> Unit
+    onToggleCompletion: (TaskEntity, Boolean) -> Unit,
+    onShareClick: (TaskEntity) -> Unit
 ) {
     var taskToDelete by remember { mutableStateOf<TaskEntity?>(null) }
     var selectedFilter by remember { mutableStateOf("All") }
     var selectedSort by remember { mutableStateOf("Default") }
 
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    // Dashboard statistics computed from tasks list
+    val totalTasks = tasks.size
+    val completedTasks = tasks.count { it.isCompleted }
+    val pendingTasks = totalTasks - completedTasks
+    val completionPercentage = if (totalTasks > 0) (completedTasks * 100) / totalTasks else 0
 
     // Filter tasks
     val filteredTasks = when (selectedFilter) {
@@ -79,7 +81,7 @@ fun HomeScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp),
+                .padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -92,6 +94,25 @@ fun HomeScreen(
             Button(onClick = onAddClick) {
                 Text("Add Task")
             }
+        }
+
+        // Dashboard statistics section using simple Text only
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+        ) {
+            Text(
+                text = "Dashboard: Total: $totalTasks | Completed: $completedTasks | Pending: $pendingTasks",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "Completion Progress: $completionPercentage%",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
         // Filter Buttons Row (All, Pending, Completed)
@@ -140,51 +161,18 @@ fun HomeScreen(
             }
         }
 
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(sortedTasks, key = { it.id }) { task ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = task.isCompleted,
-                        onCheckedChange = { isChecked ->
-                            onToggleCompletion(task, isChecked)
-                        }
+        if (sortedTasks.isEmpty()) {
+            EmptyState(message = "No tasks found in '$selectedFilter'")
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(sortedTasks, key = { it.id }) { task ->
+                    TaskCard(
+                        task = task,
+                        onTaskClick = onTaskClick,
+                        onToggleCompletion = onToggleCompletion,
+                        onShareClick = onShareClick,
+                        onDeleteClick = { taskToDelete = task }
                     )
-
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onTaskClick(task) }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = task.title,
-                            fontSize = 18.sp,
-                            textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
-                        )
-
-                        val detailsText = buildString {
-                            append("${task.priority} • ${task.category}")
-                            task.dueDate?.let {
-                                append(" • ${dateFormat.format(Date(it))}")
-                            }
-                        }
-
-                        Text(
-                            text = detailsText,
-                            fontSize = 14.sp
-                        )
-                    }
-
-                    Button(
-                        onClick = { taskToDelete = task }
-                    ) {
-                        Text("X")
-                    }
                 }
             }
         }
@@ -246,6 +234,7 @@ fun HomeScreenPreview() {
         onAddClick = {},
         onTaskClick = {},
         onDeleteClick = {},
-        onToggleCompletion = { _, _ -> }
+        onToggleCompletion = { _, _ -> },
+        onShareClick = {}
     )
 }
