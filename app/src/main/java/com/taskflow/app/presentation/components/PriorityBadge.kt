@@ -1,34 +1,58 @@
 package com.taskflow.app.presentation.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.taskflow.app.ui.theme.priorityBadgeColors
 
 @Composable
-fun PriorityBadge(priority: String) {
-    val priorityColor = when (priority) {
-        "High" -> Color(0xFFE53935)
-        "Medium" -> Color(0xFFFB8C00)
-        else -> Color(0xFF43A047)
-    }
+fun PriorityBadge(
+    priority: String,
+    modifier: Modifier = Modifier
+) {
+    val isDark = isSystemInDarkTheme()
+    val badgeColors = priorityBadgeColors(priority, isDark)
 
     Surface(
+        modifier = modifier,
         shape = RoundedCornerShape(6.dp),
-        color = priorityColor.copy(alpha = 0.15f)
+        color = badgeColors.background
     ) {
-        Text(
-            text = priority,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = priorityColor,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .background(badgeColors.text, CircleShape)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = priority,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = badgeColors.text,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 16.sp
+            )
+        }
     }
 }
