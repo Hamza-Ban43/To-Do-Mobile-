@@ -14,6 +14,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,6 +49,12 @@ fun HomeScreen(
 
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 
+    // Dashboard statistics computed from tasks list
+    val totalTasks = tasks.size
+    val completedTasks = tasks.count { it.isCompleted }
+    val pendingTasks = totalTasks - completedTasks
+    val completionPercentage = if (totalTasks > 0) (completedTasks * 100) / totalTasks else 0
+
     // Filter tasks
     val filteredTasks = when (selectedFilter) {
         "Pending" -> tasks.filter { !it.isCompleted }
@@ -79,7 +86,7 @@ fun HomeScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp),
+                .padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -94,6 +101,25 @@ fun HomeScreen(
             }
         }
 
+        // Dashboard statistics section using simple Text only
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+        ) {
+            Text(
+                text = "Dashboard: Total: $totalTasks | Completed: $completedTasks | Pending: $pendingTasks",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "Completion Progress: $completionPercentage%",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
         // Filter Buttons Row (All, Pending, Completed)
         Row(
             modifier = Modifier
@@ -106,9 +132,9 @@ fun HomeScreen(
                     onClick = { selectedFilter = filter },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedFilter == filter) {
-                            androidx.compose.material3.MaterialTheme.colorScheme.primary
+                            MaterialTheme.colorScheme.primary
                         } else {
-                            androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                            MaterialTheme.colorScheme.secondaryContainer
                         }
                     )
                 ) {
@@ -129,9 +155,9 @@ fun HomeScreen(
                     onClick = { selectedSort = sort },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedSort == sort) {
-                            androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                            MaterialTheme.colorScheme.tertiary
                         } else {
-                            androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                            MaterialTheme.colorScheme.secondaryContainer
                         }
                     )
                 ) {
