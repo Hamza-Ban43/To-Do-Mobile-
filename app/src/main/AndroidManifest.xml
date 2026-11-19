@@ -26,6 +26,9 @@
         <activity
             android:name=".presentation.addtask.AddTaskActivity"
             android:exported="false" />
+        <activity
+            android:name=".presentation.edit.EditTaskActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -1,3 +1,4 @@
+
 package com.taskflow.app
 
 import android.content.Intent
@@ -12,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.taskflow.app.data.local.TaskDatabase
 import com.taskflow.app.data.local.TaskEntity
 import com.taskflow.app.presentation.addtask.AddTaskActivity
+import com.taskflow.app.presentation.edit.EditTaskActivity
 import com.taskflow.app.presentation.home.HomeScreen
 import com.taskflow.app.ui.theme.TaskFlowTheme
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +38,21 @@ class MainActivity : ComponentActivity() {
                     tasks = tasks,
                     onAddClick = {
                         startActivity(Intent(this, AddTaskActivity::class.java))
+                    },
+                    onTaskClick = { task ->
+                        val intent = Intent(this, EditTaskActivity::class.java)
+                        intent.putExtra(EditTaskActivity.EXTRA_TASK_ID, task.id)
+                        startActivity(intent)
+                    },
+                    onDeleteClick = { task ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            db.taskDao().deleteTask(task)
+
+                            withContext(Dispatchers.Main) {
+                                tasks = tasks.filterNot { it.id == task.id }
+
+                            }
+                        }
                     }
                 )
             }
