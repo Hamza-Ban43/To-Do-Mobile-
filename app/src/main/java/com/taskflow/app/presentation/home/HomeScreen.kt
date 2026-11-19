@@ -39,7 +39,8 @@ fun HomeScreen(
     onAddClick: () -> Unit,
     onTaskClick: (TaskEntity) -> Unit,
     onDeleteClick: (TaskEntity) -> Unit,
-    onToggleCompletion: (TaskEntity, Boolean) -> Unit
+    onToggleCompletion: (TaskEntity, Boolean) -> Unit,
+    onShareClick: (TaskEntity) -> Unit
 ) {
     var taskToDelete by remember { mutableStateOf<TaskEntity?>(null) }
     var selectedFilter by remember { mutableStateOf("All") }
@@ -179,6 +180,13 @@ fun HomeScreen(
                         )
                     }
 
+                    // Share Button (Implicit Intent)
+                    TextButton(
+                        onClick = { onShareClick(task) }
+                    ) {
+                        Text("Share")
+                    }
+
                     Button(
                         onClick = { taskToDelete = task }
                     ) {
@@ -245,6 +253,7 @@ fun HomeScreenPreview() {
         onAddClick = {},
         onTaskClick = {},
         onDeleteClick = {},
-        onToggleCompletion = { _, _ -> }
+        onToggleCompletion = { _, _ -> },
+        onShareClick = {}
     )
 }
