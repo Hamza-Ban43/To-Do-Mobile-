@@ -57,6 +57,12 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     },
+                    onToggleCompletion = { task, isCompleted ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            db.taskDao().updateTaskCompletion(task.id, isCompleted)
+                            val updatedList = db.taskDao().getAllTasks()
+                            withContext(Dispatchers.Main) {
+                                tasks = updatedList
 
                     onShareClick = { task ->
                         val taskDetails = buildString {

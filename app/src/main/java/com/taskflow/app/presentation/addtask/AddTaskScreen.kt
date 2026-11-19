@@ -1,5 +1,7 @@
 package com.taskflow.app.presentation.addtask
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +27,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.taskflow.app.data.local.TaskEntity
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun AddTaskScreen(
@@ -38,6 +43,10 @@ fun AddTaskScreen(
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf("Medium") }
     var category by remember { mutableStateOf("Personal") }
+    var dueDateMillis by remember { mutableStateOf<Long?>(null) }
+    var dueDateStr by remember { mutableStateOf("") }
+
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 
     Column(
         modifier = Modifier
@@ -64,6 +73,37 @@ fun AddTaskScreen(
                 .fillMaxWidth()
                 .padding(top = 8.dp)
         )
+
+        // User-friendly Date & Time Picker Button (DatePickerDialog & TimePickerDialog)
+        Button(
+            onClick = {
+                val calendar = Calendar.getInstance()
+                DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        TimePickerDialog(
+                            context,
+                            { _, hourOfDay, minute ->
+                                calendar.set(year, month, dayOfMonth, hourOfDay, minute)
+                                dueDateMillis = calendar.timeInMillis
+                                dueDateStr = dateFormat.format(calendar.time)
+                            },
+                            calendar.get(Calendar.HOUR_OF_DAY),
+                            calendar.get(Calendar.MINUTE),
+                            true
+                        ).show()
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+        ) {
+            Text(if (dueDateStr.isBlank()) "Select Due Date & Time" else "Due: $dueDateStr")
+        }
 
         Text(text = "Priority", modifier = Modifier.padding(top = 16.dp))
 
@@ -101,7 +141,8 @@ fun AddTaskScreen(
                                 title = title.trim(),
                                 description = description.trim(),
                                 priority = priority,
-                                category = category.trim().ifBlank { "Personal" }
+                                category = category.trim().ifBlank { "Personal" },
+                                dueDate = dueDateMillis
                             )
                         )
                     }

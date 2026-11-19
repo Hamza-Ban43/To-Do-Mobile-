@@ -1,4 +1,3 @@
-
 package com.taskflow.app.presentation.home
 
 import androidx.compose.foundation.clickable
@@ -13,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -23,10 +24,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.taskflow.app.data.local.TaskEntity
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
@@ -34,10 +39,37 @@ fun HomeScreen(
     onAddClick: () -> Unit,
     onTaskClick: (TaskEntity) -> Unit,
     onDeleteClick: (TaskEntity) -> Unit,
+    onToggleCompletion: (TaskEntity, Boolean) -> Unit
     onShareClick: (TaskEntity) -> Unit
 
 ) {
     var taskToDelete by remember { mutableStateOf<TaskEntity?>(null) }
+    var selectedFilter by remember { mutableStateOf("All") }
+    var selectedSort by remember { mutableStateOf("Default") }
+
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+
+    // Filter tasks
+    val filteredTasks = when (selectedFilter) {
+        "Pending" -> tasks.filter { !it.isCompleted }
+        "Completed" -> tasks.filter { it.isCompleted }
+        else -> tasks
+    }
+
+    // Sort tasks
+    val sortedTasks = when (selectedSort) {
+        "Date" -> filteredTasks.sortedBy { it.dueDate ?: Long.MAX_VALUE }
+        "Priority" -> filteredTasks.sortedWith(
+            compareBy {
+                when (it.priority) {
+                    "High" -> 1
+                    "Medium" -> 2
+                    else -> 3
+                }
+            }
+        )
+        else -> filteredTasks.sortedByDescending { it.id }
+    }
 
     Column(
         modifier = Modifier
@@ -63,27 +95,88 @@ fun HomeScreen(
             }
         }
 
+        // Filter Buttons Row (All, Pending, Completed)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf("All", "Pending", "Completed").forEach { filter ->
+                Button(
+                    onClick = { selectedFilter = filter },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedFilter == filter) {
+                            androidx.compose.material3.MaterialTheme.colorScheme.primary
+                        } else {
+                            androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                        }
+                    )
+                ) {
+                    Text(filter)
+                }
+            }
+        }
+
+        // Sort Buttons Row (Default, Date, Priority)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf("Default", "Date", "Priority").forEach { sort ->
+                Button(
+                    onClick = { selectedSort = sort },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedSort == sort) {
+                            androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                        } else {
+                            androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                        }
+                    )
+                ) {
+                    Text("Sort: $sort")
+                }
+            }
+        }
+
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(tasks, key = { it.id }) { task ->
+            items(sortedTasks, key = { it.id }) { task ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 10.dp),
+                        .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Checkbox(
+                        checked = task.isCompleted,
+                        onCheckedChange = { isChecked ->
+                            onToggleCompletion(task, isChecked)
+                        }
+                    )
+
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onTaskClick(task) }
-                            .padding(vertical = 4.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = task.title,
-                            fontSize = 18.sp
+                            fontSize = 18.sp,
+                            textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
                         )
 
+                        val detailsText = buildString {
+                            append("${task.priority} • ${task.category}")
+                            task.dueDate?.let {
+                                append(" • ${dateFormat.format(Date(it))}")
+                            }
+                        }
+
                         Text(
-                            text = "${task.priority} • ${task.category}",
+                            text = detailsText,
                             fontSize = 14.sp
                         )
                     }
@@ -145,13 +238,20 @@ fun HomeScreenPreview() {
                 id = 1,
                 title = "Study Android",
                 priority = "High",
-                category = "Study"
+                category = "Study",
+                dueDate = System.currentTimeMillis(),
+                isCompleted = false
             ),
-            TaskEntity(id = 2, title = "Buy groceries")
+            TaskEntity(
+                id = 2,
+                title = "Buy groceries",
+                isCompleted = true
+            )
         ),
         onAddClick = {},
         onTaskClick = {},
         onDeleteClick = {},
+        onToggleCompletion = { _, _ -> }
         onShareClick = {}
     )
 }
