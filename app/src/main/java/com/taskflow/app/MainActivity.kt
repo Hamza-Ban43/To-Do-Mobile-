@@ -4,44 +4,53 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
+import com.taskflow.app.data.local.TaskDatabase
+import com.taskflow.app.data.local.TaskEntity
+import com.taskflow.app.presentation.home.HomeScreen
 import com.taskflow.app.ui.theme.TaskFlowTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var db: TaskDatabase
+    private var tasks by mutableStateOf(listOf<TaskEntity>())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        db = TaskDatabase.getInstance(this)
+        loadTasks()
+
         setContent {
             TaskFlowTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                HomeScreen(
+                    tasks = tasks,
+                    onAddTask = { title -> addTask(title) }
+                )
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    private fun loadTasks() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val result = db.taskDao().getAllTasks()
+            withContext(Dispatchers.Main) {
+                tasks = result
+            }
+        }
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TaskFlowTheme {
-        Greeting("Android")
+    private fun addTask(title: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            db.taskDao().insertTask(TaskEntity(title = title))
+            loadTasks()
+        }
     }
 }
