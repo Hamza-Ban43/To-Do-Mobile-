@@ -14,6 +14,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -105,9 +106,9 @@ fun HomeScreen(
                     onClick = { selectedFilter = filter },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedFilter == filter) {
-                            androidx.compose.material3.MaterialTheme.colorScheme.primary
+                            MaterialTheme.colorScheme.primary
                         } else {
-                            androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                            MaterialTheme.colorScheme.secondaryContainer
                         }
                     )
                 ) {
@@ -128,9 +129,9 @@ fun HomeScreen(
                     onClick = { selectedSort = sort },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedSort == sort) {
-                            androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                            MaterialTheme.colorScheme.tertiary
                         } else {
-                            androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                            MaterialTheme.colorScheme.secondaryContainer
                         }
                     )
                 ) {
