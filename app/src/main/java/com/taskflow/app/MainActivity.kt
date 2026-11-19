@@ -1,4 +1,3 @@
-
 package com.taskflow.app
 
 import android.content.Intent
@@ -37,24 +36,19 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TaskFlowTheme {
-
                 HomeScreen(
                     tasks = tasks,
-
                     onAddClick = {
                         startActivity(Intent(this, AddTaskActivity::class.java))
                     },
-
                     onTaskClick = { task ->
                         val intent = Intent(this, EditTaskActivity::class.java)
                         intent.putExtra(EditTaskActivity.EXTRA_TASK_ID, task.id)
                         startActivity(intent)
                     },
-
                     onDeleteClick = { task ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             db.taskDao().deleteTask(task)
-
                             withContext(Dispatchers.Main) {
                                 tasks = tasks.filterNot { it.id == task.id }
                             }
@@ -66,27 +60,7 @@ class MainActivity : ComponentActivity() {
                             val updatedList = db.taskDao().getAllTasks()
                             withContext(Dispatchers.Main) {
                                 tasks = updatedList
-
-                    onShareClick = { task ->
-                        val taskDetails = buildString {
-                            appendLine("Task: ${task.title}")
-
-                            if (task.description.isNotBlank()) {
-                                appendLine("Description: ${task.description}")
                             }
-
-                            appendLine("Priority: ${task.priority}")
-                            appendLine("Category: ${task.category}")
-
-                            append(
-                                "Status: ${if (task.isCompleted) "Completed" else "Pending"}"
-                            )
-                        }
-
-                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_SUBJECT, "TaskFlow - ${task.title}")
-                            putExtra(Intent.EXTRA_TEXT, taskDetails)
                         }
                     },
                     onShareClick = { task ->
@@ -109,13 +83,8 @@ class MainActivity : ComponentActivity() {
                         }
                         val shareIntent = Intent.createChooser(sendIntent, "Share Task via")
                         startActivity(shareIntent)
-
-                        startActivity(
-                            Intent.createChooser(shareIntent, "Share task using")
-                        )
                     }
                 )
-
             }
         }
     }
