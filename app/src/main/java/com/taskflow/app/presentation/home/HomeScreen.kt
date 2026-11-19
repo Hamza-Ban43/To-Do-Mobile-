@@ -11,9 +11,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -27,8 +33,12 @@ fun HomeScreen(
     tasks: List<TaskEntity>,
     onAddClick: () -> Unit,
     onTaskClick: (TaskEntity) -> Unit,
-    onDeleteClick: (TaskEntity) -> Unit
+    onDeleteClick: (TaskEntity) -> Unit,
+    onShareClick: (TaskEntity) -> Unit
+
 ) {
+    var taskToDelete by remember { mutableStateOf<TaskEntity?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -77,15 +87,52 @@ fun HomeScreen(
                             fontSize = 14.sp
                         )
                     }
-
                     Button(
-                        onClick = { onDeleteClick(task) }
+                        onClick = { onShareClick(task) }
+                    ) {
+                        Text("Share")
+                    }
+                    Button(
+                        onClick = { taskToDelete = task }
                     ) {
                         Text("X")
                     }
                 }
             }
         }
+    }
+
+    taskToDelete?.let { task ->
+        AlertDialog(
+            onDismissRequest = {
+                taskToDelete = null
+            },
+            title = {
+                Text("Delete Task?")
+            },
+            text = {
+                Text("Are you sure you want to delete \"${task.title}\"?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteClick(task)
+                        taskToDelete = null
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        taskToDelete = null
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -104,6 +151,7 @@ fun HomeScreenPreview() {
         ),
         onAddClick = {},
         onTaskClick = {},
-        onDeleteClick = {}
+        onDeleteClick = {},
+        onShareClick = {}
     )
 }
