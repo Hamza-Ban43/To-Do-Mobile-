@@ -33,7 +33,9 @@ fun HomeScreen(
     tasks: List<TaskEntity>,
     onAddClick: () -> Unit,
     onTaskClick: (TaskEntity) -> Unit,
-    onDeleteClick: (TaskEntity) -> Unit
+    onDeleteClick: (TaskEntity) -> Unit,
+    onShareClick: (TaskEntity) -> Unit
+
 ) {
     var taskToDelete by remember { mutableStateOf<TaskEntity?>(null) }
 
@@ -85,7 +87,11 @@ fun HomeScreen(
                             fontSize = 14.sp
                         )
                     }
-
+                    Button(
+                        onClick = { onShareClick(task) }
+                    ) {
+                        Text("Share")
+                    }
                     Button(
                         onClick = { taskToDelete = task }
                     ) {
@@ -145,6 +151,7 @@ fun HomeScreenPreview() {
         ),
         onAddClick = {},
         onTaskClick = {},
-        onDeleteClick = {}
+        onDeleteClick = {},
+        onShareClick = {}
     )
 }

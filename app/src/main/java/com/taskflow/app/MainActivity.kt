@@ -34,27 +34,58 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TaskFlowTheme {
+
                 HomeScreen(
                     tasks = tasks,
+
                     onAddClick = {
                         startActivity(Intent(this, AddTaskActivity::class.java))
                     },
+
                     onTaskClick = { task ->
                         val intent = Intent(this, EditTaskActivity::class.java)
                         intent.putExtra(EditTaskActivity.EXTRA_TASK_ID, task.id)
                         startActivity(intent)
                     },
+
                     onDeleteClick = { task ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             db.taskDao().deleteTask(task)
 
                             withContext(Dispatchers.Main) {
                                 tasks = tasks.filterNot { it.id == task.id }
-
                             }
                         }
+                    },
+
+                    onShareClick = { task ->
+                        val taskDetails = buildString {
+                            appendLine("Task: ${task.title}")
+
+                            if (task.description.isNotBlank()) {
+                                appendLine("Description: ${task.description}")
+                            }
+
+                            appendLine("Priority: ${task.priority}")
+                            appendLine("Category: ${task.category}")
+
+                            append(
+                                "Status: ${if (task.isCompleted) "Completed" else "Pending"}"
+                            )
+                        }
+
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_SUBJECT, "TaskFlow - ${task.title}")
+                            putExtra(Intent.EXTRA_TEXT, taskDetails)
+                        }
+
+                        startActivity(
+                            Intent.createChooser(shareIntent, "Share task using")
+                        )
                     }
                 )
+
             }
         }
     }
