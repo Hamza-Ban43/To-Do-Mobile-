@@ -40,6 +40,8 @@ fun HomeScreen(
     onTaskClick: (TaskEntity) -> Unit,
     onDeleteClick: (TaskEntity) -> Unit,
     onToggleCompletion: (TaskEntity, Boolean) -> Unit
+    onShareClick: (TaskEntity) -> Unit
+
 ) {
     var taskToDelete by remember { mutableStateOf<TaskEntity?>(null) }
     var selectedFilter by remember { mutableStateOf("All") }
@@ -178,7 +180,11 @@ fun HomeScreen(
                             fontSize = 14.sp
                         )
                     }
-
+                    Button(
+                        onClick = { onShareClick(task) }
+                    ) {
+                        Text("Share")
+                    }
                     Button(
                         onClick = { taskToDelete = task }
                     ) {
@@ -246,5 +252,6 @@ fun HomeScreenPreview() {
         onTaskClick = {},
         onDeleteClick = {},
         onToggleCompletion = { _, _ -> }
+        onShareClick = {}
     )
 }
