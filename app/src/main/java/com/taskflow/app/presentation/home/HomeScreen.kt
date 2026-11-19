@@ -2,6 +2,7 @@ package com.taskflow.app.presentation.home
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,12 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,10 +26,9 @@ import com.taskflow.app.data.local.TaskEntity
 @Composable
 fun HomeScreen(
     tasks: List<TaskEntity>,
-    onAddTask: (String) -> Unit
+    onAddClick: () -> Unit
 ) {
     val context = LocalContext.current
-    var title by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -41,47 +36,32 @@ fun HomeScreen(
             .safeDrawingPadding()
             .padding(16.dp)
     ) {
-        Text(text = "TaskFlow", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp),
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Task title") },
-                modifier = Modifier.weight(1f)
-            )
-            Button(
-                onClick = {
-                    if (title.isBlank()) {
-                        Toast.makeText(context, "Please enter a task title", Toast.LENGTH_SHORT).show()
-                    } else {
-                        onAddTask(title.trim())
-                        title = ""
-                    }
-                },
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Text("Add")
+            Text(text = "TaskFlow", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Button(onClick = onAddClick) {
+                Text("Add Task")
             }
         }
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(tasks) { task ->
-                Text(
-                    text = task.title,
-                    fontSize = 18.sp,
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp)
+                        .padding(vertical = 10.dp)
                         .clickable {
                             Toast.makeText(context, "Clicked: ${task.title}", Toast.LENGTH_SHORT).show()
                         }
-                )
+                ) {
+                    Text(text = task.title, fontSize = 18.sp)
+                    Text(text = "${task.priority} • ${task.category}", fontSize = 14.sp)
+                }
             }
         }
     }
@@ -92,9 +72,9 @@ fun HomeScreen(
 fun HomeScreenPreview() {
     HomeScreen(
         tasks = listOf(
-            TaskEntity(id = 1, title = "Study Android"),
+            TaskEntity(id = 1, title = "Study Android", priority = "High", category = "Study"),
             TaskEntity(id = 2, title = "Buy groceries")
         ),
-        onAddTask = {}
+        onAddClick = {}
     )
 }

@@ -1,5 +1,6 @@
 package com.taskflow.app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.taskflow.app.data.local.TaskDatabase
 import com.taskflow.app.data.local.TaskEntity
+import com.taskflow.app.presentation.addtask.AddTaskActivity
 import com.taskflow.app.presentation.home.HomeScreen
 import com.taskflow.app.ui.theme.TaskFlowTheme
 import kotlinx.coroutines.Dispatchers
@@ -32,10 +34,17 @@ class MainActivity : ComponentActivity() {
             TaskFlowTheme {
                 HomeScreen(
                     tasks = tasks,
-                    onAddTask = { title -> addTask(title) }
+                    onAddClick = {
+                        startActivity(Intent(this, AddTaskActivity::class.java))
+                    }
                 )
             }
         }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        loadTasks()
     }
 
     private fun loadTasks() {
@@ -44,13 +53,6 @@ class MainActivity : ComponentActivity() {
             withContext(Dispatchers.Main) {
                 tasks = result
             }
-        }
-    }
-
-    private fun addTask(title: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            db.taskDao().insertTask(TaskEntity(title = title))
-            loadTasks()
         }
     }
 }
