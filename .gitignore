@@ -20,5 +20,9 @@ local.properties
 
 # OS files
 .DS_Store
-Thumbs.dbTaskFlow.zip
+Thumbs.db
+TaskFlow.zip
 /TaskFlow.zip
+
+# JVM crash logs
+hs_err_pid*.log

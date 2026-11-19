@@ -19,6 +19,9 @@ import com.taskflow.app.ui.theme.TaskFlowTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
@@ -85,6 +88,27 @@ class MainActivity : ComponentActivity() {
                             putExtra(Intent.EXTRA_SUBJECT, "TaskFlow - ${task.title}")
                             putExtra(Intent.EXTRA_TEXT, taskDetails)
                         }
+                    },
+                    onShareClick = { task ->
+                        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                        val dateStr = if (task.dueDate != null) dateFormat.format(Date(task.dueDate)) else "None"
+                        val shareText = """
+                            TaskFlow Item:
+                            Title: ${task.title}
+                            Description: ${task.description.ifBlank { "N/A" }}
+                            Priority: ${task.priority}
+                            Category: ${task.category}
+                            Due Date: $dateStr
+                            Status: ${if (task.isCompleted) "Completed" else "Pending"}
+                        """.trimIndent()
+
+                        val sendIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, "Share Task via")
+                        startActivity(shareIntent)
 
                         startActivity(
                             Intent.createChooser(shareIntent, "Share task using")
