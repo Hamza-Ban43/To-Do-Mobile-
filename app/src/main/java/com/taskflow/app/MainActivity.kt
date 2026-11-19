@@ -50,7 +50,15 @@ class MainActivity : ComponentActivity() {
 
                             withContext(Dispatchers.Main) {
                                 tasks = tasks.filterNot { it.id == task.id }
-
+                            }
+                        }
+                    },
+                    onToggleCompletion = { task, isCompleted ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            db.taskDao().updateTaskCompletion(task.id, isCompleted)
+                            val updatedList = db.taskDao().getAllTasks()
+                            withContext(Dispatchers.Main) {
+                                tasks = updatedList
                             }
                         }
                     }
